@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install libfuse
+        run: sudo apt-get update && sudo apt-get install -y libfuse-dev
+
+      - name: Build/Release
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --workspace
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/release/menmos-fuse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
